@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CYBER_CALC // QUANTUM ENGINE</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#04050f;
+  --bg2:#07091a;
+  --panel:#0a0c20;
+  --border-c:#00ffcc22;
+  --cyan:#00ffcc;
+  --cyan2:#00e5b8;
+  --orange:#ff6a00;
+  --orange2:#ff8c00;
+  --magenta:#cc00ff;
+  --magenta2:#ff00cc;
+  --green-btn:#00ffaa;
+  --text:#c8fff4;
+  --text2:#5affda;
+  --dim:#2a4a44;
+}
+
+html,body{
+  width:100%;min-height:100vh;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Share Tech Mono',monospace;
+  overflow-x:hidden;
+}
+
+/* Stars */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%,rgba(0,255,204,0.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 80% 10%,rgba(204,0,255,0.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 50% 70%,rgba(0,255,204,0.2) 0%,transparent 100%),
+    radial-gradient(1px 1px at 10% 80%,rgba(255,106,0,0.2) 0%,transparent 100%),
+    radial-gradient(1px 1px at 90% 60%,rgba(0,255,204,0.3) 0%,transparent 100%);
+  background-size:200px 200px,300px 300px,250px 250px,180px 180px,220px 220px;
+  animation:stars 8s linear infinite;
+  pointer-events:none;z-index:0;
+}
+@keyframes stars{0%{background-position:0 0,0 0,0 0,0 0,0 0}100%{background-position:200px 200px,300px 300px,250px 250px,180px 180px,220px 220px}}
+
+.phone{
+  position:relative;z-index:1;
+  width:min(380px,100vw);
+  background:var(--bg);
+  border-radius:40px;
+  padding:20px 16px 30px;
+  border:1px solid #1a1f3a;
+  box-shadow:0 0 60px rgba(0,255,204,0.04),inset 0 0 40px rgba(0,0,0,0.5);
+  min-height:100vh;
+  display:flex;flex-direction:column;gap:14px;
+}
+
+/* Header */
+.header{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:4px 4px 0;
+}
+.logo-block{}
+.logo-title{
+  font-family:'Orbitron',sans-serif;
+  font-size:15px;font-weight:900;
+  color:var(--cyan);
+  text-shadow:0 0 10px var(--cyan),0 0 20px var(--cyan);
+  letter-spacing:2px;
+  animation:flicker 4s infinite;
+}
+@keyframes flicker{
+  0%,95%,100%{opacity:1}
+  96%{opacity:0.6}
+  97%{opacity:1}
+  98%{opacity:0.4}
+  99%{opacity:1}
+}
+.logo-sub{
+  font-size:9px;color:var(--text2);letter-spacing:3px;margin-top:2px;
+}
+.tkn-badge{
+  background:var(--bg2);
+  border:1px solid var(--border-c);
+  border-radius:6px;
+  padding:5px 12px;
+  font-size:11px;
+  color:var(--text2);
+  letter-spacing:1px;
+}
+.tkn-count{color:var(--cyan);font-weight:700;}
+
+/* Display */
+.display-wrap{
+  background:var(--bg2);
+  border:1.5px solid var(--cyan);
+  border-radius:12px;
+  padding:14px 16px;
+  min-height:100px;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 0 20px rgba(0,255,204,0.1),inset 0 0 30px rgba(0,0,0,0.6);
+}
+.display-input-preview{
+  position:absolute;top:10px;right:14px;
+  font-size:12px;color:var(--text2);letter-spacing:1px;
+  font-family:'Share Tech Mono',monospace;
+  text-shadow:0 0 6px var(--cyan);
+  max-width:65%;text-align:right;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  transition:color 0.15s;
+}
+.display-expr{
+  font-size:11px;color:var(--dim);
+  min-height:16px;margin-bottom:6px;
+  letter-spacing:1px;
+}
+.display-num{
+  font-family:'Orbitron',sans-serif;
+  font-size:38px;font-weight:700;
+  color:var(--cyan);
+  text-align:right;
+  text-shadow:0 0 15px var(--cyan);
+  min-height:48px;
+  display:flex;align-items:center;justify-content:flex-end;
+  transition:all 0.1s;
+  word-break:break-all;
+}
+
+/* Encrypted state */
+.display-encrypted{
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  min-height:80px;
+}
+.enc-text{
+  font-family:'Orbitron',sans-serif;
+  font-size:26px;font-weight:900;
+  color:var(--orange);
+  text-shadow:0 0 20px var(--orange),0 0 40px var(--orange2);
+  animation:enc-flicker 1.5s infinite;
+  letter-spacing:3px;
+}
+@keyframes enc-flicker{
+  0%,49%,51%,100%{opacity:1;text-shadow:0 0 20px var(--orange),0 0 40px var(--orange2)}
+  50%{opacity:0.7;text-shadow:0 0 30px var(--orange),0 0 60px var(--orange2),0 0 80px #ff4400}
+}
+.enc-sub{
+  font-size:9px;color:var(--orange2);letter-spacing:2px;
+  display:flex;align-items:center;gap:6px;
+}
+.enc-sub::before{content:'🔒';}
+.display-expr-enc{font-size:10px;color:var(--dim);position:absolute;top:10px;right:14px;}
+
+/* Buttons */
+.btn-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+
+.btn{
+  aspect-ratio:1;
+  border-radius:12px;
+  border:1.5px solid;
+  background:transparent;
+  font-family:'Share Tech Mono',monospace;
+  font-size:20px;font-weight:700;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  transition:all 0.08s;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+.btn:active{transform:scale(0.92);filter:brightness(1.4);}
+
+/* Number buttons - cyan border */
+.btn-num{
+  border-color:var(--cyan);
+  color:var(--cyan);
+  box-shadow:0 0 8px rgba(0,255,204,0.15),inset 0 0 15px rgba(0,0,0,0.7);
+  text-shadow:0 0 8px var(--cyan);
+}
+.btn-num:hover{box-shadow:0 0 16px rgba(0,255,204,0.3),inset 0 0 10px rgba(0,255,204,0.08);}
+
+/* Operator buttons - magenta border */
+.btn-op{
+  border-color:var(--magenta);
+  color:var(--magenta);
+  box-shadow:0 0 8px rgba(204,0,255,0.15),inset 0 0 15px rgba(0,0,0,0.7);
+  text-shadow:0 0 8px var(--magenta);
+}
+.btn-op:hover{box-shadow:0 0 16px rgba(204,0,255,0.3);}
+
+/* CLR, +/-, % - orange border */
+.btn-clr{
+  border-color:var(--orange);
+  color:var(--orange);
+  box-shadow:0 0 8px rgba(255,106,0,0.2),inset 0 0 15px rgba(0,0,0,0.7);
+  text-shadow:0 0 8px var(--orange);
+  font-size:15px;
+}
+.btn-clr:hover{box-shadow:0 0 16px rgba(255,106,0,0.3);}
+
+/* Equals - green solid */
+.btn-eq{
+  border-color:var(--green-btn);
+  background:var(--green-btn);
+  color:#001a0f;
+  font-size:22px;
+  box-shadow:0 0 20px rgba(0,255,170,0.4);
+}
+.btn-eq:hover{box-shadow:0 0 30px rgba(0,255,170,0.6);}
+.btn-eq:active{transform:scale(0.92);box-shadow:0 0 10px rgba(0,255,170,0.3);}
+
+.btn-zero{grid-column:span 2;aspect-ratio:unset;padding:16px;}
+
+/* ─── OVERLAY MODAL ─── */
+.overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.85);
+  backdrop-filter:blur(6px);
+  z-index:50;
+  align-items:center;justify-content:center;
+  padding:20px;
+}
+.overlay.show{display:flex;}
+
+.modal{
+  background:var(--bg2);
+  border-radius:20px;
+  width:min(360px,100%);
+  position:relative;
+  overflow:hidden;
+  animation:modal-in 0.3s cubic-bezier(0.2,0,0,1.3) both;
+}
+@keyframes modal-in{from{transform:scale(0.8) translateY(30px);opacity:0}to{transform:none;opacity:1}}
+
+.modal-close{
+  position:absolute;top:14px;right:16px;
+  background:none;border:none;
+  font-size:18px;color:var(--text2);
+  cursor:pointer;z-index:2;
+  transition:color 0.2s;
+}
+.modal-close:hover{color:var(--cyan);}
+
+/* ─── ACCESS DENIED modal ─── */
+#modal-token .modal-header{
+  background:linear-gradient(180deg,#0f0818,#050510);
+  padding:32px 24px 24px;
+  text-align:center;
+  border-bottom:1px solid #1a0a2a;
+}
+.denied-icon{font-size:44px;margin-bottom:12px;filter:drop-shadow(0 0 20px var(--orange));}
+.denied-title{
+  font-family:'Orbitron',sans-serif;
+  font-size:22px;font-weight:900;
+  color:var(--orange);
+  text-shadow:0 0 20px var(--orange);
+  letter-spacing:3px;
+  animation:enc-flicker 2s infinite;
+}
+.denied-sub{
+  font-size:10px;color:#888;letter-spacing:2px;margin-top:8px;line-height:1.6;
+}
+
+.modal-body{padding:20px 20px 8px;}
+.section-title{
+  font-size:10px;color:var(--text2);letter-spacing:2px;margin-bottom:12px;
+}
+.section-title::before{content:'> ';}
+
+.pkg-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.pkg{
+  border:1.5px solid #1a2a3a;
+  border-radius:10px;
+  padding:14px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;
+  transition:all 0.18s;
+  position:relative;
+}
+.pkg:hover,.pkg.selected{border-color:var(--cyan);background:rgba(0,255,204,0.05);}
+.pkg.selected::after{
+  content:'●';position:absolute;right:16px;top:50%;transform:translateY(-50%);
+  color:var(--cyan);font-size:10px;
+}
+.pkg-left{}
+.pkg-name{
+  font-family:'Orbitron',sans-serif;
+  font-size:13px;font-weight:700;color:var(--text);
+  display:flex;align-items:center;gap:8px;
+}
+.pkg-badge{
+  font-size:9px;font-family:'Rajdhani',sans-serif;font-weight:700;
+  padding:2px 7px;border-radius:4px;letter-spacing:1px;
+}
+.badge-pop{background:#ff6a00;color:#fff;}
+.badge-best{background:#00c853;color:#fff;}
+.pkg-sub{font-size:10px;color:#556;margin-top:3px;letter-spacing:1px;}
+.pkg-price{
+  font-family:'Orbitron',sans-serif;
+  font-size:16px;font-weight:900;
+  color:var(--cyan);
+  text-shadow:0 0 10px var(--cyan);
+}
+
+.btn-select-pkg{
+  width:100%;padding:16px;
+  background:linear-gradient(135deg,#2a1a6a,#3a1a8a);
+  border:1.5px solid var(--magenta);
+  border-radius:10px;
+  font-family:'Orbitron',sans-serif;
+  font-size:13px;font-weight:700;
+  color:var(--magenta);
+  letter-spacing:2px;
+  cursor:pointer;
+  transition:all 0.2s;
+  text-shadow:0 0 10px var(--magenta);
+  box-shadow:0 0 20px rgba(204,0,255,0.2);
+  margin-bottom:0;
+}
+.btn-select-pkg:hover{box-shadow:0 0 30px rgba(204,0,255,0.4);background:linear-gradient(135deg,#3a2a7a,#4a2aaa);}
+
+.divider{height:1px;background:linear-gradient(90deg,transparent,#1a3a4a,transparent);margin:16px 0;}
+.no-thanks{
+  text-align:center;padding:12px;
+  font-size:11px;color:#334;letter-spacing:2px;
+  cursor:pointer;transition:color 0.2s;
+}
+.no-thanks:hover{color:var(--text2);}
+
+/* ─── SUBSCRIPTION modal ─── */
+#modal-sub .modal-header{
+  background:linear-gradient(180deg,#100520,#050510);
+  padding:32px 24px 24px;
+  text-align:center;
+  border-bottom:1px solid #1a0a2a;
+}
+.sub-icon{
+  width:64px;height:64px;border-radius:50%;
+  border:3px solid var(--magenta);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;
+  margin:0 auto 14px;
+  box-shadow:0 0 30px rgba(204,0,255,0.4);
+  animation:spin-border 3s linear infinite;
+  background:radial-gradient(circle at center,#1a0530,#0a0218);
+}
+@keyframes spin-border{
+  0%{box-shadow:0 0 20px rgba(204,0,255,0.3),0 -4px 20px rgba(0,255,204,0.2)}
+  50%{box-shadow:0 0 30px rgba(0,255,204,0.4),0 4px 20px rgba(204,0,255,0.2)}
+  100%{box-shadow:0 0 20px rgba(204,0,255,0.3),0 -4px 20px rgba(0,255,204,0.2)}
+}
+.sub-title{
+  font-family:'Orbitron',sans-serif;
+  font-size:18px;font-weight:900;
+  background:linear-gradient(90deg,var(--magenta),var(--cyan),var(--magenta));
+  background-size:200%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:2px;
+  animation:gradient-shift 2s linear infinite;
+}
+@keyframes gradient-shift{0%{background-position:0%}100%{background-position:200%}}
+.sub-desc{font-size:10px;color:#888;letter-spacing:2px;margin-top:6px;line-height:1.6;}
+.sub-perks{
+  margin:10px 0 0;font-size:11px;color:var(--cyan);letter-spacing:1px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.sub-perks::before{content:'◆';font-size:8px;}
+
+.plan-selected{
+  border-color:var(--magenta) !important;
+  background:rgba(204,0,255,0.08) !important;
+  box-shadow:0 0 16px rgba(204,0,255,0.2) !important;
+}
+
+.btn-subscribe{
+  width:100%;padding:18px;
+  background:linear-gradient(90deg,var(--magenta2),var(--cyan));
+  border:none;
+  border-radius:10px;
+  font-family:'Orbitron',sans-serif;
+  font-size:13px;font-weight:900;
+  color:#fff;
+  letter-spacing:2px;
+  cursor:pointer;
+  transition:all 0.2s;
+  box-shadow:0 4px 30px rgba(204,0,255,0.4);
+  margin-bottom:8px;
+}
+.btn-subscribe:hover{box-shadow:0 6px 40px rgba(204,0,255,0.6);}
+
+.restore{text-align:center;font-size:10px;color:#334;letter-spacing:1px;padding:6px;cursor:pointer;}
+.restore:hover{color:#556;}
+.maybe-later{
+  text-align:center;padding:12px;font-size:11px;color:#223;letter-spacing:3px;
+  cursor:pointer;transition:color 0.2s;text-transform:uppercase;
+}
+.maybe-later:hover{color:#556;}
+.fine-print{text-align:center;font-size:9px;color:#223;padding:8px 16px 16px;line-height:1.5;font-style:italic;}
+
+/* ─── QRIS modal ─── */
+#modal-qris .modal-header{
+  background:linear-gradient(180deg,#001a10,#000f08);
+  padding:24px 24px 16px;
+  text-align:center;
+  border-bottom:1px solid #0a2a1a;
+}
+.qris-title{
+  font-family:'Orbitron',sans-serif;
+  font-size:14px;color:var(--cyan);letter-spacing:3px;font-weight:700;
+  text-shadow:0 0 10px var(--cyan);
+}
+.qris-sub{font-size:9px;color:#446;letter-spacing:2px;margin-top:4px;}
+.qris-body{padding:20px;text-align:center;}
+.qris-frame{
+  background:#fff;
+  border-radius:12px;
+  padding:12px;
+  display:inline-block;
+  margin-bottom:14px;
+  position:relative;
+  cursor:pointer;
+}
+.qris-frame img{width:160px;height:160px;display:block;}
+.qris-tap{
+  position:absolute;inset:0;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,255,204,0.1);
+  font-size:10px;color:var(--cyan);letter-spacing:1px;
+  opacity:0;transition:opacity 0.2s;
+}
+.qris-frame:hover .qris-tap{opacity:1;}
+.qris-amount{
+  font-family:'Orbitron',sans-serif;
+  font-size:20px;color:var(--orange);
+  text-shadow:0 0 10px var(--orange);
+  margin-bottom:6px;
+}
+.qris-note{font-size:10px;color:#446;letter-spacing:1px;line-height:1.5;}
+.qris-timer{
+  font-family:'Orbitron',sans-serif;
+  font-size:13px;color:var(--magenta);margin-top:10px;
+  letter-spacing:2px;
+}
+.btn-sudah-bayar{
+  width:100%;padding:15px;margin-top:14px;
+  background:linear-gradient(135deg,#003322,#005533);
+  border:1.5px solid var(--green-btn);
+  border-radius:10px;
+  font-family:'Orbitron',sans-serif;
+  font-size:12px;font-weight:700;letter-spacing:2px;
+  color:var(--green-btn);
+  cursor:pointer;transition:all 0.2s;
+  text-shadow:0 0 10px var(--green-btn);
+  box-shadow:0 0 20px rgba(0,255,170,0.2);
+  animation:glow-pulse 2s infinite;
+}
+@keyframes glow-pulse{
+  0%,100%{box-shadow:0 0 20px rgba(0,255,170,0.2)}
+  50%{box-shadow:0 0 35px rgba(0,255,170,0.5)}
+}
+.btn-sudah-bayar:hover{
+  background:linear-gradient(135deg,#004433,#007744);
+  box-shadow:0 0 40px rgba(0,255,170,0.6);
+}
+.btn-cancel{
+  width:100%;padding:13px;margin-top:8px;
+  background:transparent;border:1px solid #1a2a3a;
+  border-radius:8px;color:#446;font-family:'Share Tech Mono',monospace;
+  font-size:11px;letter-spacing:2px;cursor:pointer;transition:all 0.2s;
+}
+.btn-cancel:hover{border-color:var(--cyan);color:var(--cyan);}
+
+/* Scanlines overlay */
+.phone::after{
+  content:'';pointer-events:none;
+  position:fixed;inset:0;z-index:100;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-block">
+      <div class="logo-title">CYBER_CALC</div>
+      <div class="logo-sub">V1.0.0 // QUANTUM ENGINE</div>
+    </div>
+    <div class="tkn-badge"><span class="tkn-count" id="tkn-count">0</span> TKN</div>
+  </div>
+
+  <!-- DISPLAY -->
+  <div class="display-wrap" id="display-wrap">
+    <div class="display-input-preview" id="input-preview">&gt; _</div>
+    <div class="display-expr" id="display-expr"></div>
+    <div class="display-num" id="display-num">0</div>
+    <div class="display-encrypted" id="display-enc">
+      <div class="enc-text">ENCRYPTED</div>
+      <div class="enc-sub">RESULT LOCKED — TAP = TO UNLOCK</div>
+    </div>
+  </div>
+
+  <!-- BUTTONS -->
+  <div class="btn-grid">
+    <button class="btn btn-clr" onclick="ca('CLR')">CLR</button>
+    <button class="btn btn-clr" onclick="ca('±')">+/-</button>
+    <button class="btn btn-clr" onclick="ca('%')">%</button>
+    <button class="btn btn-op"  onclick="ca('÷')">÷</button>
+
+    <button class="btn btn-num" onclick="ca('7')">7</button>
+    <button class="btn btn-num" onclick="ca('8')">8</button>
+    <button class="btn btn-num" onclick="ca('9')">9</button>
+    <button class="btn btn-op"  onclick="ca('×')">×</button>
+
+    <button class="btn btn-num" onclick="ca('4')">4</button>
+    <button class="btn btn-num" onclick="ca('5')">5</button>
+    <button class="btn btn-num" onclick="ca('6')">6</button>
+    <button class="btn btn-op"  onclick="ca('−')">−</button>
+
+    <button class="btn btn-num" onclick="ca('1')">1</button>
+    <button class="btn btn-num" onclick="ca('2')">2</button>
+    <button class="btn btn-num" onclick="ca('3')">3</button>
+    <button class="btn btn-op"  onclick="ca('+')">+</button>
+
+    <button class="btn btn-num btn-zero" onclick="ca('0')">0</button>
+    <button class="btn btn-num" onclick="ca('.')">.</button>
+    <button class="btn btn-eq"  onclick="ca('=')">=</button>
+  </div>
+</div>
+
+<!-- ══════ MODAL: ACCESS DENIED (Token packages) ══════ -->
+<div class="overlay" id="modal-token">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAll()">✕</button>
+    <div class="modal-header">
+      <div class="denied-icon">🔒</div>
+      <div class="denied-title">ACCESS DENIED</div>
+      <div class="denied-sub">DECRYPT TOKENS REQUIRED<br>TO REVEAL CALCULATION RESULT</div>
+    </div>
+    <div class="modal-body">
+      <div class="section-title">SELECT TOKEN PACKAGE:</div>
+      <div class="pkg-list">
+        <div class="pkg" onclick="selectPkg(this,'token','1','$1.99')">
+          <div class="pkg-left">
+            <div class="pkg-name">1 UNLOCK</div>
+            <div class="pkg-sub">$1.99 / use</div>
+          </div>
+          <div class="pkg-price">$1.99</div>
+        </div>
+        <div class="pkg" onclick="selectPkg(this,'token','5','$7.99')">
+          <div class="pkg-left">
+            <div class="pkg-name">5 UNLOCKS <span class="pkg-badge badge-pop">POPULAR</span></div>
+            <div class="pkg-sub">$1.60 / use</div>
+          </div>
+          <div class="pkg-price">$7.99</div>
+        </div>
+        <div class="pkg" onclick="selectPkg(this,'token','10','$9.99')">
+          <div class="pkg-left">
+            <div class="pkg-name">10 UNLOCKS <span class="pkg-badge badge-best">BEST VALUE</span></div>
+            <div class="pkg-sub">$1.00 / use</div>
+          </div>
+          <div class="pkg-price">$9.99</div>
+        </div>
+      </div>
+      <button class="btn-select-pkg" onclick="proceedPkg()">SELECT A PACKAGE</button>
+      <div class="divider"></div>
+      <div style="text-align:center;font-size:10px;color:#223;letter-spacing:2px;padding-bottom:4px;cursor:pointer;" onclick="openSubModal()">OR SUBSCRIBE FOR UNLIMITED →</div>
+      <div class="no-thanks" onclick="closeAll()">NO, THANKS</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ MODAL: SUBSCRIPTION ══════ -->
+<div class="overlay" id="modal-sub">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAll()">✕</button>
+    <div class="modal-header">
+      <div class="sub-icon">∞</div>
+      <div class="sub-title">UNLIMITED ACCESS</div>
+      <div class="sub-desc">SUBSCRIBE FOR INFINITE<br>CALCULATION POWER</div>
+      <div class="sub-perks">Unlimited calculation unlocks</div>
+    </div>
+    <div class="modal-body">
+      <div class="section-title">CHOOSE YOUR PLAN:</div>
+      <div class="pkg-list">
+        <div class="pkg" id="plan-daily" onclick="selectPlan(this,'daily','$0.99','$0.99 / DAY')">
+          <div class="pkg-left">
+            <div class="pkg-name">DAILY ACCESS</div>
+            <div class="pkg-sub">Billed daily</div>
+          </div>
+          <div class="pkg-price">$0.99<span style="font-size:9px;color:#446">/DAY</span></div>
+        </div>
+        <div class="pkg" id="plan-weekly" onclick="selectPlan(this,'weekly','$2.99','$2.99 / WEEK')">
+          <div class="pkg-left">
+            <div class="pkg-name">WEEKLY ACCESS</div>
+            <div class="pkg-sub">Billed weekly</div>
+          </div>
+          <div class="pkg-price">$2.99<span style="font-size:9px;color:#446">/WK</span></div>
+        </div>
+        <div class="pkg plan-selected" id="plan-annual" onclick="selectPlan(this,'annual','$19.99','$19.99 / YEAR')">
+          <div class="pkg-left">
+            <div class="pkg-name">ANNUAL ACCESS <span class="pkg-badge badge-best">SAVE 87%</span></div>
+            <div class="pkg-sub">~$0.38 / week · billed annually</div>
+          </div>
+          <div class="pkg-price" style="color:var(--magenta);text-shadow:0 0 10px var(--magenta)">$19.99<span style="font-size:9px;color:#446">/YR</span></div>
+        </div>
+      </div>
+      <button class="btn-subscribe" id="subscribe-btn" onclick="openQris('$19.99/YEAR','sub')">SUBSCRIBE NOW<br><span style="font-size:9px;font-weight:400;letter-spacing:1px">$19.99 / YEAR</span></button>
+      <div class="restore">Restore Purchases</div>
+      <div class="divider"></div>
+      <div class="maybe-later" onclick="closeAll()">MAYBE LATER</div>
+      <div class="fine-print">Cancel anytime. Billed through App Store.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ MODAL: QRIS ══════ -->
+<div class="overlay" id="modal-qris">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAll()">✕</button>
+    <div class="modal-header">
+      <div class="qris-title">⚡ QRIS PAYMENT</div>
+      <div class="qris-sub">SCAN WITH ANY E-WALLET APP</div>
+    </div>
+    <div class="qris-body">
+      <div class="qris-frame" onclick="rickRoll()">
+        <!-- Real QR that redirects to Rick Roll -->
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://youtu.be/dQw4w9WgXcQ&color=000000&bgcolor=ffffff" 
+             alt="QRIS" 
+             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22160%22 height=%22160%22><rect width=%22160%22 height=%22160%22 fill=%22white%22/><text x=%2280%22 y=%2280%22 text-anchor=%22middle%22 dy=%22.35em%22 font-size=%2220%22>SCAN ME</text></svg>'">
+        <div class="qris-tap">SCAN TO PAY</div>
+      </div>
+      <div class="qris-amount" id="qris-amount">$1.99</div>
+      <div class="qris-note">Scan QR code dengan GoPay, OVO, Dana,<br>LinkAja atau aplikasi bank Anda</div>
+      <div class="qris-timer" id="qris-timer">⏱ Expires in: 04:59</div>
+      <div style="font-size:9px;color:#223;letter-spacing:1px;margin-top:6px">(or tap QR to pay instantly)</div>
+      <button class="btn-sudah-bayar" onclick="sudahBayar()">✅ SUDAH BAYAR — LIHAT JAWABAN</button>
+      <button class="btn-cancel" onclick="closeAll()">[ CANCEL PAYMENT ]</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CALCULATOR STATE ───
+let state = {
+  cur: '0', prev: null, op: null,
+  reset: false, locked: false,
+  pendingResult: null, tokens: 0,
+  selectedPkg: null, selectedPlan: 'annual',
+  qrisAmount: '$1.99', timerInterval: null,
+  pendingPayType: 'token', isSubscribed: false
+};
+
+const dispNum  = document.getElementById('display-num');
+const dispExpr = document.getElementById('display-expr');
+const dispEnc  = document.getElementById('display-enc');
+const tknCount = document.getElementById('tkn-count');
+const inputPreview = document.getElementById('input-preview');
+
+function updatePreview() {
+  let txt = '';
+  if (state.locked) { inputPreview.textContent = '🔒 LOCKED'; inputPreview.style.color='var(--orange)'; return; }
+  if (state.prev !== null && state.op) {
+    txt = state.prev + ' ' + state.op + ' ' + (state.reset ? '' : state.cur);
+  } else {
+    txt = state.cur === '0' ? '> _' : '> ' + state.cur;
+  }
+  inputPreview.textContent = txt;
+  inputPreview.style.color = state.cur !== '0' || state.prev ? 'var(--text2)' : 'var(--dim)';
+}
+
+function updateDisplay(val) {
+  const s = String(val);
+  dispNum.style.fontSize = s.length > 10 ? '22px' : s.length > 7 ? '30px' : '38px';
+  dispNum.textContent = s;
+}
+
+function showEncrypted(exprText) {
+  dispNum.style.display = 'none';
+  dispEnc.style.display = 'flex';
+  document.getElementById('display-wrap').querySelector('.display-expr').textContent = exprText;
+}
+
+function showNormal() {
+  dispNum.style.display = 'flex';
+  dispEnc.style.display = 'none';
+  state.locked = false;
+}
+
+function ca(key) {
+  const ops = ['+','−','×','÷'];
+
+  // If locked and user presses = → show payment
+  if (state.locked) {
+    if (key === '=') { openTokenModal(); return; }
+    if (key === 'CLR') {
+      state = {...state, cur:'0', prev:null, op:null, reset:false, locked:false, pendingResult:null};
+      showNormal(); updateDisplay('0'); dispExpr.textContent = ''; updatePreview(); return;
+    }
+    return;
+  }
+
+  if (key === 'CLR') {
+    state = {...state, cur:'0', prev:null, op:null, reset:false, locked:false, pendingResult:null};
+    updateDisplay('0'); dispExpr.textContent = ''; updatePreview(); return;
+  }
+  if (key === '±') {
+    state.cur = String(-parseFloat(state.cur)||0);
+    updateDisplay(state.cur); updatePreview(); return;
+  }
+  if (key === '%') {
+    state.cur = String(parseFloat(state.cur)/100);
+    updateDisplay(state.cur); updatePreview(); return;
+  }
+  if (key === '.') {
+    if (state.reset) { state.cur = '0.'; state.reset = false; }
+    else if (!state.cur.includes('.')) state.cur += '.';
+    updateDisplay(state.cur); updatePreview(); return;
+  }
+  if (!isNaN(key)) {
+    if (state.reset || state.cur === '0') { state.cur = key; state.reset = false; }
+    else state.cur = state.cur.length < 12 ? state.cur + key : state.cur;
+    updateDisplay(state.cur); updatePreview(); return;
+  }
+  if (ops.includes(key)) {
+    if (state.prev !== null && !state.reset) {
+      const r = compute(parseFloat(state.prev), parseFloat(state.cur), state.op);
+      state.cur = String(r); updateDisplay(state.cur);
+    }
+    state.prev = state.cur; state.op = key; state.reset = true;
+    dispExpr.textContent = state.cur + ' ' + key; updatePreview(); return;
+  }
+  if (key === '=') {
+    if (state.prev === null || state.op === null) return;
+    const r = compute(parseFloat(state.prev), parseFloat(state.cur), state.op);
+    const exprText = '> ' + state.prev + ' ' + state.op + ' ' + state.cur + ' ×';
+    state.pendingResult = r;
+    state.locked = true;
+    // Check tokens
+    if (state.tokens > 0) {
+      // Has tokens, reveal directly
+      state.tokens--;
+      updateTknBadge();
+      state.cur = String(r);
+      state.prev = null; state.op = null; state.reset = true;
+      state.locked = false;
+      dispExpr.textContent = exprText.replace('×','=');
+      updateDisplay(String(r));
+      updatePreview();
+      return;
+    }
+    showEncrypted(exprText);
+    updatePreview();
+    return;
+  }
+}
+
+function compute(a,b,op) {
+  if (op==='+') return round(a+b);
+  if (op==='−') return round(a-b);
+  if (op==='×') return round(a*b);
+  if (op==='÷') return b===0?'ERR':round(a/b);
+  return b;
+}
+function round(n){return Math.round(n*1e10)/1e10;}
+
+// ─── MODALS ───
+function openTokenModal() {
+  document.getElementById('modal-token').classList.add('show');
+}
+function openSubModal() {
+  document.getElementById('modal-token').classList.remove('show');
+  document.getElementById('modal-sub').classList.add('show');
+}
+function closeAll() {
+  ['modal-token','modal-sub','modal-qris'].forEach(id=>{
+    document.getElementById(id).classList.remove('show');
+  });
+  if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+}
+
+// Token pkg selection
+function selectPkg(el, type, count, price) {
+  document.querySelectorAll('#modal-token .pkg').forEach(p=>p.classList.remove('selected'));
+  el.classList.add('selected');
+  state.selectedPkg = {type, count: parseInt(count), price};
+  state.qrisAmount = price;
+}
+
+function proceedPkg() {
+  if (!state.selectedPkg) {
+    const first = document.querySelector('#modal-token .pkg');
+    first.classList.add('selected');
+    state.selectedPkg = {type:'token', count:1, price:'$1.99'};
+    state.qrisAmount = '$1.99';
+  }
+  openQris(state.selectedPkg.price, 'token');
+}
+
+// Plan selection
+function selectPlan(el, plan, price, label) {
+  document.querySelectorAll('#modal-sub .pkg').forEach(p=>p.classList.remove('plan-selected'));
+  el.classList.add('plan-selected');
+  state.selectedPlan = plan;
+  state.qrisAmount = price;
+  const btn = document.getElementById('subscribe-btn');
+  btn.innerHTML = 'SUBSCRIBE NOW<br><span style="font-size:9px;font-weight:400;letter-spacing:1px">'+label+'</span>';
+  btn.onclick = ()=>openQris(price, 'sub');
+}
+
+function openQris(amount, payType) {
+  closeAll();
+  state.pendingPayType = payType || 'token';
+  document.getElementById('qris-amount').textContent = amount;
+  document.getElementById('modal-qris').classList.add('show');
+  startTimer(299);
+}
+
+function startTimer(secs) {
+  if (state.timerInterval) clearInterval(state.timerInterval);
+  let s = secs;
+  const el = document.getElementById('qris-timer');
+  function tick() {
+    const m = Math.floor(s/60).toString().padStart(2,'0');
+    const sec = (s%60).toString().padStart(2,'0');
+    el.textContent = '⏱ Expires in: '+m+':'+sec;
+    if (s<=0) { clearInterval(state.timerInterval); el.textContent = '⚠ EXPIRED'; el.style.color='var(--orange)'; }
+    s--;
+  }
+  tick();
+  state.timerInterval = setInterval(tick, 1000);
+}
+
+function rickRoll() {
+  window.open('https://youtu.be/dQw4w9WgXcQ', '_blank');
+}
+
+function sudahBayar() {
+  if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+  closeAll();
+
+  // ── Grant tokens based on what was purchased ──
+  const payType = state.pendingPayType || 'token';
+  let granted = 0;
+
+  if (payType === 'sub') {
+    // Subscription plans
+    const planTokens = { daily: 99, weekly: 999, annual: 9999 };
+    granted = planTokens[state.selectedPlan] || 999;
+    state.isSubscribed = true;
+  } else {
+    // Token package: count sudah disimpan di selectedPkg.count
+    granted = state.selectedPkg ? state.selectedPkg.count : 1;
+  }
+
+  state.tokens += granted;
+  animateTkn(granted);
+
+  // ── Reveal hasil kalau masih ada pending ──
+  if (state.pendingResult !== null) {
+    state.tokens--; // pakai 1 token langsung
+    const r = state.pendingResult;
+    state.pendingResult = null;
+    state.prev = null; state.op = null; state.reset = true; state.locked = false;
+    state.cur = String(r);
+    showNormal();
+    updateDisplay(state.cur);
+    updatePreview();
+    flashDisplay();
+  }
+
+  updateTknBadge();
+}
+
+function updateTknBadge() {
+  tknCount.textContent = state.tokens;
+  // Color the badge based on tokens
+  const badge = tknCount.parentElement;
+  if (state.tokens === 0) {
+    badge.style.borderColor = '#1a2a3a';
+    badge.style.color = 'var(--text2)';
+  } else if (state.tokens >= 99) {
+    badge.style.borderColor = 'var(--magenta)';
+    tknCount.style.color = 'var(--magenta)';
+    tknCount.style.textShadow = '0 0 8px var(--magenta)';
+  } else {
+    badge.style.borderColor = 'var(--cyan)';
+    tknCount.style.color = 'var(--cyan)';
+    tknCount.style.textShadow = '0 0 8px var(--cyan)';
+  }
+}
+
+function animateTkn(granted) {
+  // Pop animation on badge
+  const badge = tknCount.parentElement;
+  badge.style.transform = 'scale(1.3)';
+  badge.style.transition = 'transform 0.2s cubic-bezier(0.2,0,0,1.5)';
+  setTimeout(()=>{ badge.style.transform = 'scale(1)'; }, 300);
+
+  // Count-up animation
+  const target = state.tokens;
+  const start = target - granted;
+  let cur = start;
+  const step = Math.ceil(granted / 20);
+  const iv = setInterval(()=>{
+    cur = Math.min(cur + step, target);
+    tknCount.textContent = cur;
+    if (cur >= target) clearInterval(iv);
+  }, 40);
+}
+
+function flashDisplay() {
+  dispNum.style.color = 'var(--green-btn)';
+  dispNum.style.textShadow = '0 0 30px var(--green-btn)';
+  setTimeout(()=>{
+    dispNum.style.color = 'var(--cyan)';
+    dispNum.style.textShadow = '0 0 15px var(--cyan)';
+  }, 1200);
+}
+
+// ─── KEYBOARD ───
+document.addEventListener('keydown', e=>{
+  const map = {'Enter':'=','Escape':'CLR','Backspace':'CLR','/':'÷','*':'×','-':'−'};
+  let k = map[e.key]||e.key;
+  const valid=['0','1','2','3','4','5','6','7','8','9','.','+','−','×','÷','=','CLR','%'];
+  if(valid.includes(k)) ca(k);
+});
+
+// Simulate gaining tokens after "payment" (display only)
+// This is never actually triggered — just UI
+function grantTokens(n) {
+  state.tokens += n;
+  tknCount.textContent = state.tokens;
+  closeAll();
+  if (state.pendingResult !== null) {
+    state.cur = String(state.pendingResult);
+    state.pendingResult = null;
+    state.prev = null; state.op = null; state.reset = true;
+    showNormal();
+    updateDisplay(state.cur);
+  }
+}
+
+// Button ripple
+document.querySelectorAll('.btn').forEach(btn=>{
+  btn.addEventListener('click', function(e){
+    const r=document.createElement('span');
+    const rect=this.getBoundingClientRect();
+    const size=Math.max(rect.width,rect.height)*2;
+    Object.assign(r.style,{
+      position:'absolute',borderRadius:'50%',
+      width:size+'px',height:size+'px',
+      left:(e.clientX-rect.left-size/2)+'px',
+      top:(e.clientY-rect.top-size/2)+'px',
+      background:'rgba(0,255,204,0.12)',
+      transform:'scale(0)',
+      animation:'ripple 0.5s linear',
+      pointerEvents:'none'
+    });
+    const style=document.createElement('style');
+    style.textContent='@keyframes ripple{to{transform:scale(4);opacity:0}}';
+    document.head.appendChild(style);
+    this.appendChild(r);
+    setTimeout(()=>r.remove(),600);
+  });
+});
+</script>
+</body>
+</html>
